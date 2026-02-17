@@ -1,0 +1,12 @@
+.zig-cache/
+zig-out/
+*.obj
+*.pdb
+*.asm
+*.exe
+
+# Keep BASIC source private by default.
+*.bas
+
+# Public BASIC examples allowed for git.
+!examples_demo.bas
