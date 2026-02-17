@@ -23,6 +23,9 @@ Tiny BASIC (`.bas`) to x64 NASM (`.asm`) transpiler in Zig 0.15.x.
 
 - This repository is a compiler/transpiler toolchain (`.bas` -> `.asm`).
 - The interpreter/VM runtime project lives in the separate `tinybasic` repository.
+- Historical note:
+  - The IL model used in the toolchain comes from the original Tiny BASIC IL design published in 1975.
+  - That historical listing targeted Intel Intellec 8 / MOD 80 (8080-era) environments via macros, while the IL itself is virtual and portable.
 
 ## Current Pipeline
 
