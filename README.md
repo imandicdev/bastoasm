@@ -2,6 +2,16 @@
 
 Tiny BASIC (`.bas`) to x64 NASM (`.asm`) transpiler in Zig 0.15.x.
 
+## Author
+
+- Ilija Mandic
+
+## Project Purpose
+
+- Build a production-grade BAS-to-ASM transpiler for the TinyBASIC toolchain.
+- Keep BASIC front-end logic explicit and teachable (lexer, parser, semantic pass, IR, backend).
+- Generate practical x64 NASM output that can be assembled/linked into small native executables.
+
 ## Current Pipeline
 
 1. Parse BASIC source into AST
