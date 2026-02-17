@@ -1,3 +1,9 @@
+// =============================================================================
+// Project : bstoasm
+// File    : bstoasm\src\ast.zig
+// Author  : Ilija Mandic
+// Purpose : AST model for BASIC statements and expressions.
+// =============================================================================
 const std = @import("std"); // Import std so this module can use standard types consistently.
 
 pub const Program = struct { // Program is the AST root node for one BASIC source file.

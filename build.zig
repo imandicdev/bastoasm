@@ -1,3 +1,9 @@
+// =============================================================================
+// Project : bstoasm
+// File    : bstoasm\build.zig
+// Author  : Ilija Mandic
+// Purpose : Build script for the BAS-to-ASM transpiler tool.
+// =============================================================================
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {

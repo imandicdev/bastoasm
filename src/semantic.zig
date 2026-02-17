@@ -1,3 +1,9 @@
+// =============================================================================
+// Project : bstoasm
+// File    : bstoasm\src\semantic.zig
+// Author  : Ilija Mandic
+// Purpose : Semantic checker for AST correctness and constraints.
+// =============================================================================
 const std = @import("std"); // Import std for hash maps and allocator-based helpers.
 const ast = @import("ast.zig"); // Import AST node types to validate parser output.
 

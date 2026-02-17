@@ -1,3 +1,9 @@
+// =============================================================================
+// Project : bstoasm
+// File    : bstoasm\src\main.zig
+// Author  : Ilija Mandic
+// Purpose : CLI entry point and pipeline orchestration for transpilation.
+// =============================================================================
 const std = @import("std"); // Import Zig standard library for printing and basic utilities.
 const lexer = @import("lexer.zig"); // Import our lexer module so we can run a tokenization demo.
 const parser = @import("parser.zig"); // Import parser module so we can build AST from source.

@@ -1,3 +1,9 @@
+// =============================================================================
+// Project : bstoasm
+// File    : bstoasm\src\ir.zig
+// Author  : Ilija Mandic
+// Purpose : IR definition, lowering pass, and optimization pass.
+// =============================================================================
 const std = @import("std"); // Import std for allocators, arrays, and writer formatting.
 const ast = @import("ast.zig"); // Import AST model that this module lowers from.
 

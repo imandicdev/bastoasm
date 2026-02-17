@@ -1,3 +1,9 @@
+// =============================================================================
+// Project : bstoasm
+// File    : bstoasm\src\codegen_x64_nasm.zig
+// Author  : Ilija Mandic
+// Purpose : x64 NASM backend that emits assembly from IR.
+// =============================================================================
 const std = @import("std"); // Import std for allocator, maps, and string formatting helpers.
 const ir = @import("ir.zig"); // Import IR model that this backend converts into NASM source text.
 const ast = @import("ast.zig"); // Import AST relational operator enum reused in IR compare payload.

@@ -1,3 +1,9 @@
+// =============================================================================
+// Project : bstoasm
+// File    : bstoasm\src\lexer.zig
+// Author  : Ilija Mandic
+// Purpose : Lexer for line-numbered BASIC input source.
+// =============================================================================
 const std = @import("std"); // Import Zig standard library for strings, ascii helpers, maps, and errors.
 
 pub const TokenTag = enum { // TokenTag defines all token kinds that parser can receive.

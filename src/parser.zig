@@ -1,3 +1,9 @@
+// =============================================================================
+// Project : bstoasm
+// File    : bstoasm\src\parser.zig
+// Author  : Ilija Mandic
+// Purpose : Parser that builds AST from BASIC tokens.
+// =============================================================================
 const std = @import("std"); // Import std for allocator types and dynamic arrays.
 const lexer = @import("lexer.zig"); // Import token types and lexer scanner.
 const ast = @import("ast.zig"); // Import AST node definitions used as parser output.
