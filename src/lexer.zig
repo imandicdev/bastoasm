@@ -19,10 +19,13 @@ pub const TokenTag = enum { // TokenTag defines all token kinds that parser can 
     kw_if, // IF keyword.
     kw_then, // THEN keyword.
     kw_goto, // GOTO keyword.
+    kw_gosub, // GOSUB keyword.
+    kw_return, // RETURN keyword.
     kw_data, // DATA keyword.
     kw_read, // READ keyword.
     kw_poke, // POKE keyword.
     kw_call, // CALL keyword.
+    kw_chain, // CHAIN keyword.
     kw_end, // END keyword.
 
     plus, // '+' operator.
@@ -260,10 +263,13 @@ const keyword_map = std.StaticStringMap(TokenTag).initComptime(.{ // Compile-tim
     .{ "IF", .kw_if }, // IF keyword entry.
     .{ "THEN", .kw_then }, // THEN keyword entry.
     .{ "GOTO", .kw_goto }, // GOTO keyword entry.
+    .{ "GOSUB", .kw_gosub }, // GOSUB keyword entry.
+    .{ "RETURN", .kw_return }, // RETURN keyword entry.
     .{ "DATA", .kw_data }, // DATA keyword entry.
     .{ "READ", .kw_read }, // READ keyword entry.
     .{ "POKE", .kw_poke }, // POKE keyword entry.
     .{ "CALL", .kw_call }, // CALL keyword entry.
+    .{ "CHAIN", .kw_chain }, // CHAIN keyword entry.
     .{ "END", .kw_end }, // END keyword entry.
 }); // End keyword map literal.
 

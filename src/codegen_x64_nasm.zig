@@ -94,6 +94,8 @@ pub fn emitProgram(allocator: std.mem.Allocator, program: ir.Program) CodegenErr
             }, // End div emission.
             .cmp => try emitCompare(&out, allocator, inst.data.cmp), // Emit relational comparison and boolean push.
             .jump => try emitJumpToLabel(&out, allocator, "    jmp ", inst.data.jump), // Emit unconditional jump.
+            .gosub_call => try emitJumpToLabel(&out, allocator, "    call ", inst.data.gosub_call), // Emit subroutine call to line label.
+            .gosub_return => try appendLine(&out, allocator, "    ret"), // Emit return from GOSUB subroutine.
             .jump_if_false => { // Emit conditional jump on false (zero).
                 try appendLine(&out, allocator, "    pop rax"); // Pop condition value from stack.
                 try appendLine(&out, allocator, "    cmp rax, 0"); // Compare condition with zero.

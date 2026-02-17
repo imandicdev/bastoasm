@@ -26,11 +26,14 @@ pub const StmtTag = enum { // StmtTag enumerates all statement kinds in this com
     let_stmt, // let_stmt corresponds to `LET A = expr`.
     print_stmt, // print_stmt corresponds to `PRINT ...`.
     goto_stmt, // goto_stmt corresponds to `GOTO line`.
+    gosub_stmt, // gosub_stmt corresponds to `GOSUB line`.
+    return_stmt, // return_stmt corresponds to `RETURN`.
     if_then_stmt, // if_then_stmt corresponds to `IF expr relop expr THEN stmt`.
     data_stmt, // data_stmt corresponds to `DATA n[, n ...]`.
     read_stmt, // read_stmt corresponds to `READ A`.
     poke_stmt, // poke_stmt corresponds to `POKE addr, value`.
     call_stmt, // call_stmt corresponds to `CALL n`.
+    chain_stmt, // chain_stmt corresponds to `CHAIN "file.bas"`.
     end_stmt, // end_stmt corresponds to `END`.
 }; // End StmtTag enum.
 
@@ -38,11 +41,14 @@ pub const StmtData = union(StmtTag) { // StmtData carries per-statement payload 
     let_stmt: LetStmt, // Payload for LET statement.
     print_stmt: PrintStmt, // Payload for PRINT statement.
     goto_stmt: ExprRef, // Payload for GOTO target expression.
+    gosub_stmt: ExprRef, // Payload for GOSUB target expression.
+    return_stmt: void, // RETURN has no payload.
     if_then_stmt: IfThenStmt, // Payload for IF THEN statement.
     data_stmt: DataStmt, // Payload for DATA statement.
     read_stmt: u8, // Payload for READ variable index.
     poke_stmt: PokeStmt, // Payload for POKE statement.
     call_stmt: ExprRef, // Payload for CALL argument expression.
+    chain_stmt: []const u8, // Payload for CHAIN target file path.
     end_stmt: void, // END has no payload.
 }; // End StmtData union.
 
@@ -156,6 +162,10 @@ fn freeStmt(allocator: std.mem.Allocator, stmt: StmtRef) void { // freeStmt recu
         .goto_stmt => { // GOTO branch.
             freeExpr(allocator, stmt.data.goto_stmt); // Free target expression.
         }, // End GOTO branch.
+        .gosub_stmt => { // GOSUB branch.
+            freeExpr(allocator, stmt.data.gosub_stmt); // Free target expression.
+        }, // End GOSUB branch.
+        .return_stmt => {}, // RETURN has no heap-owned payload.
         .if_then_stmt => { // IF THEN branch.
             freeExpr(allocator, stmt.data.if_then_stmt.left); // Free left comparison expression.
             freeExpr(allocator, stmt.data.if_then_stmt.right); // Free right comparison expression.
@@ -172,6 +182,7 @@ fn freeStmt(allocator: std.mem.Allocator, stmt: StmtRef) void { // freeStmt recu
         .call_stmt => { // CALL branch.
             freeExpr(allocator, stmt.data.call_stmt); // Free CALL argument expression subtree.
         }, // End CALL branch.
+        .chain_stmt => {}, // CHAIN path string is a slice into source text; no owned allocation here.
         .end_stmt => {}, // END has no heap-owned payload.
     } // End statement switch.
     allocator.destroy(stmt); // Destroy statement node object itself.

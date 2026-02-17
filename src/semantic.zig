@@ -12,6 +12,9 @@ pub const SemanticError = error{ // SemanticError enumerates validation failures
     DuplicateLineNumber, // Same BASIC line number appears more than once.
     InvalidVariableIndex, // Variable index is outside A..Z range.
     MissingGotoTarget, // Constant GOTO target line does not exist in program.
+    DynamicGosubNotSupported, // GOSUB currently requires compile-time constant target line.
+    MissingGosubTarget, // Constant GOSUB target line does not exist in program.
+    ChainNotSupportedInNativeTranspile, // CHAIN cannot be lowered to single native executable in current compiler stage.
 }; // End SemanticError error set.
 
 pub fn validateProgram(allocator: std.mem.Allocator, program: ast.Program) SemanticError!void { // Validate entire AST program in two passes.
@@ -53,6 +56,14 @@ fn validateStmt(stmt_ref: ast.StmtRef, line_set: *const std.AutoHashMap(i32, voi
                 if (!line_set.contains(target_line)) return SemanticError.MissingGotoTarget; // Reject unresolved constant jump target.
             } // End constant-target check.
         }, // End GOTO branch.
+        .gosub_stmt => { // GOSUB statement semantic checks.
+            const target_expr = stmt.data.gosub_stmt; // Read GOSUB target expression node.
+            try validateExpr(target_expr); // Validate target expression subtree first.
+            if (target_expr.tag != .number) return SemanticError.DynamicGosubNotSupported; // Keep first implementation explicit: only constant targets are supported in native lowering.
+            const target_line = target_expr.data.number; // Extract numeric GOSUB target line.
+            if (!line_set.contains(target_line)) return SemanticError.MissingGosubTarget; // Reject unresolved constant subroutine target.
+        }, // End GOSUB branch.
+        .return_stmt => {}, // RETURN has no extra semantic checks in this compiler stage.
         .if_then_stmt => { // IF THEN statement semantic checks.
             try validateExpr(stmt.data.if_then_stmt.left); // Validate left comparison expression.
             try validateExpr(stmt.data.if_then_stmt.right); // Validate right comparison expression.
@@ -65,6 +76,7 @@ fn validateStmt(stmt_ref: ast.StmtRef, line_set: *const std.AutoHashMap(i32, voi
             try validateExpr(stmt.data.poke_stmt.value); // Validate POKE value expression.
         }, // End POKE branch.
         .call_stmt => try validateExpr(stmt.data.call_stmt), // CALL argument expression must be semantically valid.
+        .chain_stmt => return SemanticError.ChainNotSupportedInNativeTranspile, // CHAIN requires multi-file runtime orchestration and is currently rejected explicitly.
         .end_stmt => {}, // END has no payload and no semantic checks in this stage.
     } // End statement switch.
 } // End validateStmt.

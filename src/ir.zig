@@ -31,6 +31,8 @@ pub const Tag = enum { // Tag enumerates all IR opcodes used in current compiler
     div, // div pops two values and pushes quotient.
     cmp, // cmp compares two top values with relational op and pushes boolean-like result.
     jump, // jump transfers control to label unconditionally.
+    gosub_call, // gosub_call performs subroutine call to static target label.
+    gosub_return, // gosub_return returns from previous gosub_call.
     jump_if_false, // jump_if_false pops condition and jumps when false.
     jump_indirect, // jump_indirect transfers control to runtime-computed target line.
     read_data, // read_data loads next DATA item into variable cell.
@@ -55,6 +57,8 @@ pub const Data = union(Tag) { // Data stores payload for each IR opcode variant.
     div: void, // Payload for div opcode.
     cmp: ast.RelOp, // Payload for cmp opcode.
     jump: Label, // Payload for jump opcode.
+    gosub_call: Label, // Payload for gosub_call target label.
+    gosub_return: void, // Payload for gosub_return opcode.
     jump_if_false: Label, // Payload for jump_if_false opcode.
     jump_indirect: void, // Payload for jump_indirect opcode.
     read_data: u8, // Payload for read_data opcode stores destination variable index.
@@ -131,6 +135,8 @@ fn dumpInstruction(inst: Instruction) void { // dumpInstruction prints one IR in
         .div => std.debug.print("div", .{}), // Print div opcode.
         .cmp => std.debug.print("cmp {s}", .{relOpName(inst.data.cmp)}), // Print cmp relational operator.
         .jump => dumpLabel("jump", inst.data.jump), // Print unconditional jump target with concrete id.
+        .gosub_call => dumpLabel("gosub_call", inst.data.gosub_call), // Print subroutine call target label.
+        .gosub_return => std.debug.print("gosub_return", .{}), // Print subroutine return opcode.
         .jump_if_false => dumpLabel("jump_if_false", inst.data.jump_if_false), // Print conditional jump target with concrete id.
         .jump_indirect => std.debug.print("jump_indirect", .{}), // Print indirect jump opcode.
         .read_data => std.debug.print("read_data {d}", .{inst.data.read_data}), // Print READ opcode with destination variable index.
@@ -230,6 +236,18 @@ const Builder = struct { // Builder owns mutable lowering state while transformi
                     try self.emit(.jump_indirect, .{ .jump_indirect = {} }); // Emit indirect jump opcode.
                 } // End GOTO target-kind branch.
             }, // End GOTO lowering.
+            .gosub_stmt => { // GOSUB lowering branch.
+                if (stmt.data.gosub_stmt.tag == .number) { // Semantic pass should guarantee this; keep branch defensive for robustness.
+                    const target_line = stmt.data.gosub_stmt.data.number; // Extract static target line number.
+                    try self.emit(.gosub_call, .{ .gosub_call = .{ .line = target_line } }); // Emit subroutine call to target line label.
+                    try self.emitContinue(next_line); // Continue with natural next line after callee returns.
+                } else { // Defensive fallback when semantic validation is bypassed.
+                    try self.emit(.jump_indirect, .{ .jump_indirect = {} }); // Reuse existing unsupported dynamic transfer path.
+                } // End defensive GOSUB lowering branch.
+            }, // End GOSUB lowering.
+            .return_stmt => { // RETURN lowering branch.
+                try self.emit(.gosub_return, .{ .gosub_return = {} }); // Emit subroutine return opcode.
+            }, // End RETURN lowering.
             .if_then_stmt => { // IF THEN lowering branch.
                 const false_label = self.freshTempLabel(); // Allocate label that marks false-condition path.
                 try self.lowerExpr(stmt.data.if_then_stmt.left); // Emit left comparison expression.
@@ -259,6 +277,9 @@ const Builder = struct { // Builder owns mutable lowering state while transformi
                 try self.emit(.call, .{ .call = {} }); // Emit CALL opcode.
                 try self.emitContinue(next_line); // Continue execution after CALL.
             }, // End CALL lowering.
+            .chain_stmt => { // CHAIN lowering branch.
+                try self.emit(.halt, .{ .halt = {} }); // Semantic pass rejects CHAIN; keep deterministic fallback if lowering is invoked directly.
+            }, // End CHAIN lowering.
             .end_stmt => { // END lowering branch.
                 try self.emit(.halt, .{ .halt = {} }); // END maps to immediate program termination.
             }, // End END lowering.

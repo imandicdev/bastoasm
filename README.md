@@ -19,6 +19,9 @@ Author: Ilija Mandic
 5. Apply IR optimizations
 6. Emit x64 NASM assembly
 
+Current statement coverage includes `LET`, `PRINT`, `GOTO`, `GOSUB`, `RETURN`, `IF ... THEN`, `DATA`, `READ`, `POKE`, `PEEK`, `CALL`, and `END`.
+`CHAIN` is parsed but intentionally rejected in native single-executable mode.
+
 ## Architecture
 
 - Front-end: `lexer -> parser -> semantic`

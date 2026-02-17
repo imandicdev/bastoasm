@@ -14,6 +14,7 @@ pub const ParseError = error{ // ParseError is finite parser failure set for syn
     ExpectedStatement, // A statement keyword was expected but not found.
     ExpectedExpression, // Expression was expected but current token cannot start one.
     ExpectedDataValue, // DATA statement expected numeric literal item.
+    ExpectedString, // Statement expected a quoted string literal argument.
     InvalidVariable, // Variable token is invalid for this grammar stage.
     InvalidRelOp, // Relational operator token is invalid in IF condition.
 } || lexer.LexError || std.mem.Allocator.Error; // Compose parser errors with lexer errors and allocation errors.
@@ -73,11 +74,14 @@ pub const Parser = struct { // Parser keeps lexer state and builds AST nodes inc
             .kw_let => try self.parseLet(), // LET statement parser.
             .kw_print => try self.parsePrint(), // PRINT statement parser.
             .kw_goto => try self.parseGoto(), // GOTO statement parser.
+            .kw_gosub => try self.parseGosub(), // GOSUB statement parser.
+            .kw_return => try self.parseReturn(), // RETURN statement parser.
             .kw_if => try self.parseIfThen(), // IF THEN statement parser.
             .kw_data => try self.parseData(), // DATA statement parser.
             .kw_read => try self.parseRead(), // READ statement parser.
             .kw_poke => try self.parsePoke(), // POKE statement parser.
             .kw_call => try self.parseCall(), // CALL statement parser.
+            .kw_chain => try self.parseChain(), // CHAIN statement parser.
             .kw_end => try self.parseEnd(), // END statement parser.
             else => ParseError.ExpectedStatement, // Anything else cannot start valid statement in this stage.
         }; // End statement dispatch.
@@ -124,6 +128,17 @@ pub const Parser = struct { // Parser keeps lexer state and builds AST nodes inc
         const target = try self.parseExpression(); // Parse target expression.
         return try self.allocStmt(.goto_stmt, .{ .goto_stmt = target }); // Build GOTO node.
     } // End parseGoto.
+
+    fn parseGosub(self: *Parser) ParseError!ast.StmtRef { // Parse `GOSUB <expr>`.
+        try self.consume(.kw_gosub); // Consume GOSUB keyword.
+        const target = try self.parseExpression(); // Parse GOSUB target expression.
+        return try self.allocStmt(.gosub_stmt, .{ .gosub_stmt = target }); // Build GOSUB node.
+    } // End parseGosub.
+
+    fn parseReturn(self: *Parser) ParseError!ast.StmtRef { // Parse `RETURN`.
+        try self.consume(.kw_return); // Consume RETURN keyword.
+        return try self.allocStmt(.return_stmt, .{ .return_stmt = {} }); // Build RETURN node with void payload.
+    } // End parseReturn.
 
     fn parseIfThen(self: *Parser) ParseError!ast.StmtRef { // Parse `IF <expr> <relop> <expr> THEN <stmt>`.
         try self.consume(.kw_if); // Consume IF keyword.
@@ -177,6 +192,14 @@ pub const Parser = struct { // Parser keeps lexer state and builds AST nodes inc
         const callee = try self.parseExpression(); // Parse CALL id expression.
         return try self.allocStmt(.call_stmt, .{ .call_stmt = callee }); // Build CALL node.
     } // End parseCall.
+
+    fn parseChain(self: *Parser) ParseError!ast.StmtRef { // Parse `CHAIN "path.bas"`.
+        try self.consume(.kw_chain); // Consume CHAIN keyword.
+        if (self.current.tag != .string) return ParseError.ExpectedString; // Require quoted path literal for first CHAIN implementation.
+        const target = self.current.lexeme; // Capture chain target path text.
+        try self.advance(); // Consume string token.
+        return try self.allocStmt(.chain_stmt, .{ .chain_stmt = target }); // Build CHAIN node.
+    } // End parseChain.
 
     fn parseExpression(self: *Parser) ParseError!ast.ExprRef { // Parse additive-precedence expression.
         var expr = try self.parseTerm(); // Parse first multiplicative term.
