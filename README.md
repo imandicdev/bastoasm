@@ -12,6 +12,18 @@ Tiny BASIC (`.bas`) to x64 NASM (`.asm`) transpiler in Zig 0.15.x.
 - Keep BASIC front-end logic explicit and teachable (lexer, parser, semantic pass, IR, backend).
 - Generate practical x64 NASM output that can be assembled/linked into small native executables.
 
+## Architecture
+
+- Front-end: lexer -> parser -> semantic validation.
+- Middle-end: AST lowering to stack-style IR + peephole optimizations.
+- Back-end: IR -> x64 NASM text emission.
+- Runtime boundary: generated assembly calls `tb_*` runtime symbols (implemented in `runtime/tb_runtime.c`).
+
+## Scope
+
+- This repository is a compiler/transpiler toolchain (`.bas` -> `.asm`).
+- The interpreter/VM runtime project lives in the separate `tinybasic` repository.
+
 ## Current Pipeline
 
 1. Parse BASIC source into AST
